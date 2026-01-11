@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Playground - LibraryAPI</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f8fafc; color: #334155; }
+        
+        nav { 
+            background: white; 
+            border-bottom: 1px solid #e2e8f0; 
+            padding: 15px 50px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+        nav a { text-decoration: none; color: #64748b; margin-left: 20px; font-weight: 600; font-size: 14px; }
+        nav a:hover { color: #10b981; }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        
+        .playground-card {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .input-group { margin-bottom: 25px; }
+        label { display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px; font-size: 14px; }
+        
+        input { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 10px; 
+            background: #f1f5f9; 
+            font-family: monospace; 
+            color: #475569;
+            box-sizing: border-box;
+        }
+
+        .btn-test { 
+            width: 100%; 
+            background: #10b981; 
+            color: white; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.2s;
+        }
+        .btn-test:hover { background: #059669; transform: translateY(-2px); }
+
+        .json-response {
+            background: #0f172a; /* Slate 900 */
+            color: #38bdf8; /* Sky 400 */
+            padding: 25px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            min-height: 300px;
+            border: 1px solid #1e293b;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><strong>LibraryAPI Console</strong></div>
+        <div>
+            <a href="/anggota/dashboard.html">Katalog</a>
+            <a href="/anggota/playground.html" style="color: #10b981;">API Playground</a>
+            <a href="/" onclick="localStorage.clear()" style="color: #ef4444;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="playground-card">
+            <h2 style="margin-top:0; color:#1e293b;">API Test Console</h2>
+            <p style="color: #64748b; margin-bottom: 30px;">Uji konektivitas API Anda secara langsung dari browser.</p>
+
+            <div class="input-group">
+                <label>Request URL (GET)</label>
+                <input type="text" value="http://localhost:3000/books" readonly>
+            </div>
+
+            <div class="input-group">
+                <label>Header: x-api-key</label>
+                <input type="text" id="userKey" readonly>
+            </div>
+
+            <button onclick="runTest()" class="btn-test">Kirim Permintaan (Execute Request)</button>
+
+            <div style="margin-top: 40px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0; color:#1e293b;">Response Body</h3>
+                    <span id="statusCode" class="status-badge" style="display:none;"></span>
+                </div>
+                <pre id="jsonOutput" class="json-response">// Hasil JSON akan muncul di sini...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.apiKey) {
+            document.getElementById('userKey').value = user.apiKey;
+        }
+
+        async function runTest() {
+            const output = document.getElementById('jsonOutput');
+            const statusBadge = document.getElementById('statusCode');
+            output.innerText = "// Mengambil data dari server...";
+            
+            try {
+                const res = await fetch('/books', {
+                    method: 'GET',
+                    headers: { 'x-api-key': user.apiKey }
+                });
+
+                const data = await res.json();
+                
+                statusBadge.innerText = `HTTP ${res.status}`;
+                statusBadge.style.display = 'inline';
+                statusBadge.style.backgroundColor = res.ok ? '#dcfce7' : '#fee2e2';
+                statusBadge.style.color = res.ok ? '#166534' : '#991b1b';
+
+                output.innerText = JSON.stringify(data, null, 4);
+            } catch (err) {
+                output.innerText = "// Error: Gagal terhubung ke server. Pastikan API berjalan.";
+            }
+        }
+    </script>
+</body>
+</html>

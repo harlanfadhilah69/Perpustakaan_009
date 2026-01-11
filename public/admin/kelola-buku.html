@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Buku - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f8fafc; color: #334155; }
+        
+        nav { background: white; border-bottom: 1px solid #e2e8f0; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+        nav a { text-decoration: none; color: #64748b; margin-left: 20px; font-weight: 600; font-size: 14px; }
+        nav a:hover { color: #10b981; }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        
+        .card { background: white; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; background: #f1f5f9; color: #475569; font-size: 13px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 10% auto; padding: 35px; border-radius: 20px; width: 400px; box-shadow: 0 20px 25px rgba(0,0,0,0.1); }
+        
+        input { width: 100%; padding: 12px; margin: 10px 0 20px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; }
+        button { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><strong>LibraryAPI</strong> | Admin Panel</div>
+        <div>
+            <a href="/admin/dashboard.html">Dashboard</a>
+            <a href="/admin/kelola-buku.html" style="color: #10b981;">Kelola Buku</a>
+            <a href="/admin/laporan.html">Laporan</a>
+            <a href="/" onclick="localStorage.clear()" style="color: #ef4444;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h2 style="margin-top:0;">Tambah Buku Baru</h2>
+            <form id="bookForm" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
+                <div>
+                    <label style="font-size: 12px; font-weight: bold; color: #64748b;">Judul</label>
+                    <input type="text" id="judul" required style="margin: 5px 0 0;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: bold; color: #64748b;">Penulis</label>
+                    <input type="text" id="penulis" required style="margin: 5px 0 0;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: bold; color: #64748b;">Stok</label>
+                    <input type="number" id="stok" required style="margin: 5px 0 0;">
+                </div>
+                <button type="submit" class="success" style="height: 42px; background: #10b981; color: white;">Simpan</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top:0;">Inventaris Buku</h2>
+            <table id="adminBookTable">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Judul</th><th>Penulis</th><th>Stok</th><th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Edit Buku</h2>
+            <input type="hidden" id="editId">
+            <label>Judul Buku</label>
+            <input type="text" id="editJudul">
+            <label>Penulis</label>
+            <input type="text" id="editPenulis">
+            <label>Stok</label>
+            <input type="number" id="editStok">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="updateBuku()" style="flex: 1; background: #10b981; color: white;">Update</button>
+                <button onclick="closeModal()" style="flex: 1; background: #f1f5f9; color: #475569;">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'Admin') window.location.href = '/auth/login.html';
+
+        async function loadBooksAdmin() {
+            const res = await fetch('/books', { headers: { 'x-api-key': user.apiKey } });
+            const books = await res.json();
+            const tbody = document.querySelector('#adminBookTable tbody');
+            tbody.innerHTML = books.map(book => `
+                <tr>
+                    <td>#${book.id}</td>
+                    <td><strong>${book.judul}</strong></td>
+                    <td>${book.penulis}</td>
+                    <td>${book.stok} unit</td>
+                    <td>
+                        <button onclick='openEditModal(${JSON.stringify(book)})' style="background: #e2e8f0; color: #1e293b; padding: 5px 12px; margin-right: 5px;">Edit</button>
+                        <button onclick="hapusBuku(${book.id})" style="background: #fee2e2; color: #ef4444; padding: 5px 12px;">Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Fungsi Post, Put, Delete tetap sama, cukup pastikan header 'x-api-key' ada.
+        document.getElementById('bookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { judul: document.getElementById('judul').value, penulis: document.getElementById('penulis').value, stok: document.getElementById('stok').value };
+            await fetch('/books', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': user.apiKey }, body: JSON.stringify(data) });
+            loadBooksAdmin(); document.getElementById('bookForm').reset();
+        });
+
+        function openEditModal(book) {
+            document.getElementById('editId').value = book.id;
+            document.getElementById('editJudul').value = book.judul;
+            document.getElementById('editPenulis').value = book.penulis;
+            document.getElementById('editStok').value = book.stok;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+
+        async function updateBuku() {
+            const id = document.getElementById('editId').value;
+            const data = { judul: document.getElementById('editJudul').value, penulis: document.getElementById('editPenulis').value, stok: document.getElementById('editStok').value };
+            await fetch(`/books/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-api-key': user.apiKey }, body: JSON.stringify(data) });
+            closeModal(); loadBooksAdmin();
+        }
+
+        async function hapusBuku(id) {
+            if (confirm('Hapus buku ini?')) {
+                await fetch(`/books/${id}`, { method: 'DELETE', headers: { 'x-api-key': user.apiKey } });
+                loadBooksAdmin();
+            }
+        }
+        loadBooksAdmin();
+    </script>
+</body>
+</html>

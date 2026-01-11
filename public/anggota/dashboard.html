@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Anggota - LibraryAPI</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f8fafc; color: #334155; }
+        
+        nav { 
+            background: white; 
+            border-bottom: 1px solid #e2e8f0; 
+            padding: 15px 50px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+        nav a { text-decoration: none; color: #64748b; margin-left: 20px; font-weight: 600; font-size: 14px; }
+        nav a:hover { color: #10b981; }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        
+        h1, h2 { color: #1e293b; font-weight: 800; }
+        
+        .welcome-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .welcome-card h1 { color: #10b981; margin: 0; font-size: 2rem; }
+        .welcome-card p { opacity: 0.8; margin-top: 10px; }
+
+        /* Style Baru untuk Kotak API Key Permanen */
+        .api-credential-card {
+            background: #f1f5f9; 
+            border-left: 5px solid #10b981;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .section-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; background: #f1f5f9; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 15px; }
+        tr:hover { background-color: #f8fafc; }
+
+        .btn-logout { color: #ef4444 !important; }
+        
+        /* Style untuk input dan button copy */
+        .copy-group { display: flex; gap: 10px; margin-top: 15px; }
+        .copy-group input { 
+            background: white; 
+            font-family: 'Courier New', monospace; 
+            flex: 1; 
+            border: 1px solid #e2e8f0; 
+            padding: 12px; 
+            border-radius: 10px; 
+            color: #1e293b;
+            font-weight: bold;
+        }
+        .btn-copy { 
+            background: #1e293b; 
+            color: white; 
+            border: none; 
+            padding: 0 25px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background 0.2s;
+        }
+        .btn-copy:hover { background: #334155; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><strong>LibraryAPI</strong></div>
+        <div>
+            <a href="/anggota/dashboard.html" style="color: #10b981;">Katalog</a>
+            <a href="/anggota/playground.html">API Playground</a> 
+            <a href="/" onclick="localStorage.clear()" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-card">
+            <h1 id="user-info">Selamat Datang</h1>
+            <p>Jelajahi koleksi buku kami atau gunakan API Key Anda di Playground.</p>
+        </div>
+
+        <div class="api-credential-card">
+            <h3 style="margin-top:0; color: #1e293b;">Kredensial API Anda</h3>
+            <p style="font-size: 0.9rem; color: #64748b;">Gunakan kunci permanen ini untuk mengakses layanan LibraryAPI melalui permintaan HTTP.</p>
+            <div class="copy-group">
+                <input type="text" id="myApiKey" readonly placeholder="API Key tidak ditemukan...">
+                <button onclick="copyKey()" class="btn-copy">Salin Kunci</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>Katalog Buku Tersedia</h2>
+            <table id="bookTable">
+                <thead>
+                    <tr>
+                        <th>Judul Buku</th>
+                        <th>Penulis</th>
+                        <th>Tersedia</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h2>Pinjaman Aktif Saya</h2>
+            <table id="loanTable">
+                <thead>
+                    <tr>
+                        <th>Judul Buku</th>
+                        <th>Tanggal Pinjam</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Logika untuk menampilkan data User dan API Key
+        document.addEventListener('DOMContentLoaded', () => {
+            const userData = JSON.parse(localStorage.getItem('user'));
+            
+            if (userData) {
+                // Update Nama di Welcome Card
+                if (document.getElementById('user-info')) {
+                    document.getElementById('user-info').innerText = `Halo, ${userData.nama}!`;
+                }
+                // Update Isi Input API Key
+                if (document.getElementById('myApiKey') && userData.apiKey) {
+                    document.getElementById('myApiKey').value = userData.apiKey;
+                }
+            } else {
+                // Proteksi jika belum login
+                window.location.href = '/auth/login.html';
+            }
+        });
+
+        // Fungsi Salin ke Clipboard
+        function copyKey() {
+            const copyText = document.getElementById("myApiKey");
+            if (!copyText.value) return;
+            
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(copyText.value);
+            
+            alert("✅ API Key berhasil disalin ke clipboard!");
+        }
+    </script>
+
+    <script src="/js/loans.js"></script>
+    <script src="/js/books.js"></script>
+</body>
+</html>

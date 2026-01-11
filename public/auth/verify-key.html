@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Keamanan - LibraryAPI</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Desain Senada dengan Index & Login (Modern Slate & Emerald) */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        nav { 
+            background: white; 
+            border-bottom: 1px solid #e2e8f0; 
+            padding: 15px 50px; 
+            display: flex; 
+            justify-content: center; 
+        }
+        
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+            padding: 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+            border: 1px solid #e2e8f0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { text-align: center; color: #1e293b; font-weight: 800; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #64748b; font-size: 0.95rem; margin-bottom: 30px; }
+
+        .api-box {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .api-box h4 { margin-top: 0; color: #1e293b; display: flex; align-items: center; }
+
+        .step-number {
+            background: #10b981;
+            color: white;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .key-display {
+            display: none;
+            background: #1e293b;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 15px 0;
+            border: 1px dashed #10b981;
+            font-size: 1.1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 10px 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-generate { background: #1e293b; color: white; }
+        .btn-generate:hover { background: #334155; }
+
+        .btn-verify { background: #10b981; color: white; margin-top: 10px; }
+        .btn-verify:hover { background: #059669; transform: translateY(-2px); }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .cancel-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <nav>
+        <strong>LibraryAPI</strong>
+    </nav>
+
+    <div class="container">
+        <h2>Langkah Keamanan</h2>
+        <p class="subtitle">Generate dan verifikasi kunci untuk mengakses dashboard Anda.</p>
+
+        <div class="api-box">
+            <h4><span class="step-number">1</span> Dapatkan Kunci</h4>
+            <p style="font-size: 0.9rem; color: #475569;">Klik tombol untuk membuat kunci akses sesi ini.</p>
+            <button onclick="generateKey()" class="btn-generate">Generate API Key</button>
+            <div id="displayKey" class="key-display"></div>
+        </div>
+
+        <div class="api-box">
+            <h4><span class="step-number">2</span> Verifikasi</h4>
+            <p style="font-size: 0.9rem; color: #475569;">Tempelkan kembali kunci yang muncul di atas.</p>
+            <input type="text" id="inputKey" placeholder="Masukkan API Key...">
+            <button onclick="verifyKey()" class="btn-verify">Verifikasi & Masuk</button>
+        </div>
+        
+        <a href="/" onclick="localStorage.clear()" class="cancel-link">Batal & Keluar</a>
+    </div>
+
+    <script>
+        function generateKey() {
+            const randomKey = Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 12);
+            const displayDiv = document.getElementById('displayKey');
+            displayDiv.innerText = randomKey.toUpperCase();
+            displayDiv.style.display = 'block';
+            sessionStorage.setItem('tempKey', randomKey.toUpperCase());
+        }
+
+        async function verifyKey() {
+            const input = document.getElementById('inputKey').value.trim();
+            const tempKey = sessionStorage.getItem('tempKey');
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            if (!input) {
+                alert("Silakan masukkan kunci terlebih dahulu!");
+                return;
+            }
+
+            if (input === tempKey) {
+                try {
+                    const res = await fetch('/auth/update-key', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: user.id, apiKey: input })
+                    });
+
+                    if (res.ok) {
+                        user.apiKey = input;
+                        localStorage.setItem('user', JSON.stringify(user));
+                        alert("✅ Verifikasi Berhasil!");
+                        window.location.href = '/anggota/dashboard.html';
+                    } else {
+                        alert("Gagal memperbarui kunci di server.");
+                    }
+                } catch (err) {
+                    alert("Terjadi kesalahan koneksi.");
+                }
+            } else {
+                alert("❌ Kunci tidak cocok!");
+            }
+        }
+
+        if (!localStorage.getItem('user')) {
+            window.location.href = '/auth/login.html';
+        }
+    </script>
+</body>
+</html>

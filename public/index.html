@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibraryAPI - Developer Portal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Reset & Base Simplicity */
+        body { background-color: #f8fafc; color: #334155; line-height: 1.6; }
+        
+        /* Modern Hero Section */
+        .hero { 
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+            color: white; 
+            padding: 80px 20px; 
+            text-align: center; 
+            border-radius: 0 0 40px 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .hero h1 { color: #10b981; font-size: 3.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 15px; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+        
+        /* Simplify Badges */
+        .badge { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 13px; margin: 0 5px; }
+
+        /* Document Styling */
+        .container { max-width: 850px; margin: -40px auto 50px; }
+        .doc-card { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Clean Endpoint Box */
+        .endpoint-box { 
+            background: #f1f5f9; 
+            padding: 16px; 
+            border-radius: 12px; 
+            font-family: 'JetBrains Mono', 'Fira Code', monospace; 
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            border-left: 4px solid #10b981;
+        }
+        .method { background: #10b981; color: white; padding: 4px 10px; border-radius: 6px; font-size: 14px; margin-right: 15px; }
+        .url { color: #1e293b; font-weight: 600; }
+        
+        code { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+        pre { background: #1e293b; color: #94a3b8; padding: 15px; border-radius: 8px; font-size: 13px; overflow-x: auto; }
+
+        /* Minimalist Buttons */
+        .btn-main { 
+            display: inline-block;
+            background: #10b981; 
+            color: white; 
+            padding: 14px 30px; 
+            border-radius: 10px; 
+            text-decoration: none; 
+            font-weight: 700;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .btn-main:hover { background: #059669; transform: translateY(-2px); }
+        
+        nav { background: white; border-bottom: 1px solid #e2e8f0; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><strong>LibraryAPI</strong></div>
+        <div>
+            <a href="/auth/login.html" style="text-decoration: none; color: #64748b; margin-right: 20px; font-weight: 600;">Login</a>
+            <a href="/auth/register.html" class="btn-main" style="padding: 8px 20px; font-size: 14px;">Daftar API Key</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Library Data API</h1>
+        <p>Solusi RESTful API yang simpel untuk mengakses data katalog perpustakaan secara real-time.</p>
+        <div style="margin-top: 25px;">
+            <span class="badge">v1.0.0</span>
+            <span class="badge">JSON Format</span>
+            <span class="badge">High Speed</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="doc-card">
+            <h2 style="margin-top:0;">Dokumentasi API</h2>
+            <p style="color: #64748b;">Gunakan API Key Anda di dalam Header permintaan untuk autentikasi keamanan.</p>
+
+            <div style="margin-top: 40px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 5px;">1. Ambil Katalog Buku</h3>
+                <p style="font-size: 14px; color: #64748b;">Mengambil seluruh data buku yang tersedia dalam database.</p>
+                <div class="endpoint-box">
+                    <span class="method">GET</span> 
+                    <span class="url">/books</span>
+                </div>
+                <p style="font-size: 13px;">Header: <code>x-api-key: YOUR_API_KEY</code></p>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 5px;">2. Proses Peminjaman</h3>
+                <p style="font-size: 14px; color: #64748b;">Membuat transaksi peminjaman buku baru.</p>
+                <div class="endpoint-box">
+                    <span class="method" style="background: #3b82f6;">POST</span> 
+                    <span class="url">/loans</span>
+                </div>
+                <pre>Body (JSON):
+{
+  "book_id": 1,
+  "user_id": 10
+}</pre>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 40px 0;">
+            <h2 style="margin-bottom: 10px;">Siap Membangun Aplikasi?</h2>
+            <p style="color: #64748b; margin-bottom: 25px;">Dapatkan akses instan ke seluruh data koleksi kami.</p>
+            <a href="/auth/register.html" class="btn-main">Mulai Secara Gratis</a>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; border-top: 1px solid #e2e8f0;">
+        &copy; 2026 LibraryAPI Platform by Harlan. Built for Developers.
+    </footer>
+</body>
+</html>

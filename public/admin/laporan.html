@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan - LibraryAPI</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f8fafc; color: #334155; }
+        
+        /* Navbar Fix: Pastikan teks link berwarna gelap secara default */
+        nav { 
+            background: white; 
+            border-bottom: 1px solid #e2e8f0; 
+            padding: 15px 50px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+        }
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+        
+        nav a { 
+            text-decoration: none; 
+            color: #64748b !important; /* Warna abu-abu slate agar terlihat jelas */
+            margin-left: 20px; 
+            font-weight: 600; 
+            font-size: 14px; 
+            transition: color 0.2s;
+        }
+        
+        nav a:hover { color: #10b981 !important; } /* Hijau saat hover */
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; background: #f1f5f9; color: #475569; font-size: 13px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .status-dipinjam { background: #fef3c7; color: #92400e; }
+        .status-kembali { background: #dcfce7; color: #166534; }
+        
+        .btn-verify { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-verify:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><strong>LibraryAPI</strong> | Admin Panel</div>
+        <div>
+            <a href="/admin/dashboard.html">Dashboard</a>
+            <a href="/admin/kelola-buku.html">Kelola Buku</a>
+            <a href="/admin/laporan.html" style="color: #10b981 !important;">Laporan</a>
+            <a href="/" onclick="localStorage.clear()" style="color: #ef4444 !important;">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <h1 style="margin-top:0; color: #1e293b;">Laporan Transaksi Harian</h1>
+            <p style="color: #64748b;">Daftar aktivitas peminjaman dan pengembalian buku hari ini.</p>
+            
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th width="80">ID</th>
+                        <th>Peminjam</th>
+                        <th>Judul Buku</th>
+                        <th>Status</th>
+                        <th width="150">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/js/reports.js"></script>
+</body>
+</html>
