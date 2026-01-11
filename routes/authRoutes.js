@@ -66,4 +66,37 @@ router.post('/update-key', async (req, res) => {
     }
 });
 
+// --- AMBIL SEMUA USER (Hanya untuk Admin) ---
+router.get('/users', async (req, res) => {
+    try {
+        const [users] = await db.query('SELECT id, nama, email, role, api_key FROM users');
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: "Gagal mengambil daftar user" });
+    }
+});
+
+// --- UPDATE ROLE USER ---
+router.put('/users/role/:id', async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+    try {
+        await db.query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
+        res.json({ message: "Role berhasil diperbarui" });
+    } catch (err) {
+        res.status(500).json({ message: "Gagal update role" });
+    }
+});
+
+// --- HAPUS USER ---
+router.delete('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query('DELETE FROM users WHERE id = ?', [id]);
+        res.json({ message: "User berhasil dihapus" });
+    } catch (err) {
+        res.status(500).json({ message: "Gagal menghapus user" });
+    }
+});
+
 module.exports = router;

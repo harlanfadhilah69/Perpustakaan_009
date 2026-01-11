@@ -41,15 +41,21 @@
             padding: 12px 16px; 
             border: 1px solid #e2e8f0; 
             border-radius: 10px; 
-            background: #f1f5f9; 
+            /* Perubahan: Background dibuat putih dan teks lebih gelap agar terlihat bisa diisi */
+            background: #ffffff; 
             font-family: monospace; 
-            color: #475569;
+            color: #1e293b;
             box-sizing: border-box;
+            transition: border-color 0.2s;
         }
+        input:focus { border-color: #10b981; outline: none; }
+
+        /* Input khusus readonly tetap abu-abu */
+        input[readonly] { background: #f1f5f9; color: #64748b; }
 
         .btn-test { 
             width: 100%; 
-            background: #10b981; 
+            background: #1e293b; 
             color: white; 
             padding: 15px; 
             border: none; 
@@ -58,15 +64,15 @@
             cursor: pointer; 
             transition: all 0.2s;
         }
-        .btn-test:hover { background: #059669; transform: translateY(-2px); }
+        .btn-test:hover { background: #334155; transform: translateY(-2px); }
 
         .json-response {
-            background: #0f172a; /* Slate 900 */
-            color: #38bdf8; /* Sky 400 */
+            background: #0f172a;
+            color: #38bdf8;
             padding: 25px;
             border-radius: 12px;
             overflow-x: auto;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-family: 'JetBrains Mono', monospace;
             min-height: 300px;
             border: 1px solid #1e293b;
             font-size: 14px;
@@ -85,7 +91,7 @@
 </head>
 <body>
     <nav>
-        <div><strong>LibraryAPI Console</strong></div>
+        <div><strong>LibraryAPI</strong></div>
         <div>
             <a href="/anggota/dashboard.html">Katalog</a>
             <a href="/anggota/playground.html" style="color: #10b981;">API Playground</a>
@@ -96,7 +102,7 @@
     <div class="container">
         <div class="playground-card">
             <h2 style="margin-top:0; color:#1e293b;">API Test Console</h2>
-            <p style="color: #64748b; margin-bottom: 30px;">Uji konektivitas API Anda secara langsung dari browser.</p>
+            <p style="color: #64748b; margin-bottom: 30px;">Uji endpoint API dengan memasukkan kredensial Anda secara manual.</p>
 
             <div class="input-group">
                 <label>Request URL (GET)</label>
@@ -104,8 +110,8 @@
             </div>
 
             <div class="input-group">
-                <label>Header: x-api-key</label>
-                <input type="text" id="userKey" readonly>
+                <label>Header: x-api-key (Isi Manual)</label>
+                <input type="text" id="userKey" placeholder="Tempelkan API Key Anda di sini...">
             </div>
 
             <button onclick="runTest()" class="btn-test">Kirim Permintaan (Execute Request)</button>
@@ -121,20 +127,29 @@
     </div>
 
     <script>
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user && user.apiKey) {
-            document.getElementById('userKey').value = user.apiKey;
-        }
+        // Pastikan input kosong saat halaman dimuat (tidak otomatis terisi)
+        window.onload = () => {
+            document.getElementById('userKey').value = '';
+        };
 
         async function runTest() {
             const output = document.getElementById('jsonOutput');
             const statusBadge = document.getElementById('statusCode');
-            output.innerText = "// Mengambil data dari server...";
+            
+            // Ambil API Key dari input manual
+            const manualKey = document.getElementById('userKey').value.trim();
+
+            if (!manualKey) {
+                alert("Harap masukkan x-api-key terlebih dahulu!");
+                return;
+            }
+
+            output.innerText = "// Menghubungi server...";
             
             try {
                 const res = await fetch('/books', {
                     method: 'GET',
-                    headers: { 'x-api-key': user.apiKey }
+                    headers: { 'x-api-key': manualKey } // Gunakan manualKey
                 });
 
                 const data = await res.json();
@@ -146,7 +161,7 @@
 
                 output.innerText = JSON.stringify(data, null, 4);
             } catch (err) {
-                output.innerText = "// Error: Gagal terhubung ke server. Pastikan API berjalan.";
+                output.innerText = "// Error: Kunci ditolak atau server sedang offline.";
             }
         }
     </script>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola User - Admin Panel</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f8fafc; color: #334155; }
+        nav { background: white; border-bottom: 1px solid #e2e8f0; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        nav strong { color: #1e293b; font-size: 1.4rem; }
+        nav a { text-decoration: none; color: #64748b; margin-left: 20px; font-weight: 600; font-size: 14px; }
+        nav a:hover { color: #10b981; }
+
+        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; background: #f1f5f9; color: #475569; font-size: 13px; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
+
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-admin { background: #dcfce7; color: #166534; }
+        .badge-anggota { background: #f1f5f9; color: #475569; }
+
+        button { padding: 8px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 12px; }
+        .btn-role { background: #1e293b; color: white; margin-right: 5px; }
+        .btn-role:hover { background: #334155; }
+        .btn-delete { background: #fee2e2; color: #ef4444; }
+        .btn-delete:hover { background: #fecaca; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div><strong>LibraryAPI</strong> | Admin Panel</div>
+        <div>
+            <a href="/admin/dashboard.html">Dashboard</a>
+            <a href="/admin/kelola-buku.html">Kelola Buku</a>
+            <a href="/admin/kelola-user.html" style="color: #10b981;">Kelola User</a>
+            <a href="/admin/laporan.html">Laporan</a>
+            <a href="/" onclick="localStorage.clear()" style="color: #ef4444;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1 style="margin-top:0; color: #1e293b;">Manajemen Pengguna</h1>
+            <p style="color: #64748b;">Lihat daftar pengguna, ubah hak akses, atau hapus akun yang tidak aktif.</p>
+            
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status API Key</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (!currentUser || currentUser.role !== 'Admin') window.location.href = '/auth/login.html';
+
+        async function loadUsers() {
+            const res = await fetch('/auth/users', { headers: { 'x-api-key': currentUser.apiKey } });
+            const users = await res.json();
+            const tbody = document.querySelector('#userTable tbody');
+            
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td><strong>${u.nama}</strong></td>
+                    <td>${u.email}</td>
+                    <td><span class="badge ${u.role === 'Admin' ? 'badge-admin' : 'badge-anggota'}">${u.role}</span></td>
+                    <td><small style="font-family:monospace">${u.api_key ? 'Terverifikasi' : '<span style="color:#ef4444">Belum Verifikasi</span>'}</small></td>
+                    <td>
+                        <button class="btn-role" onclick="toggleRole(${u.id}, '${u.role}')">Ubah Role</button>
+                        ${u.id !== currentUser.id ? `<button class="btn-delete" onclick="deleteUser(${u.id})">Hapus</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function toggleRole(id, currentRole) {
+            const newRole = currentRole === 'Admin' ? 'Anggota' : 'Admin';
+            if (!confirm(`Ubah role user ini menjadi ${newRole}?`)) return;
+
+            await fetch(`/auth/users/role/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': currentUser.apiKey },
+                body: JSON.stringify({ role: newRole })
+            });
+            loadUsers();
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Yakin ingin menghapus user ini? Akun tidak bisa dikembalikan.')) return;
+
+            await fetch(`/auth/users/${id}`, {
+                method: 'DELETE',
+                headers: { 'x-api-key': currentUser.apiKey }
+            });
+            loadUsers();
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
